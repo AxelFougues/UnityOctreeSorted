@@ -1,0 +1,19 @@
+{
+  "name": "com.abysswalkerdev.unityoctreesorted",
+  "version": "1.0.0",
+  "displayName": "Unity Octree Sorted",
+  "description": "A 3D octree with nearby object search and optional result sorting.",
+  "unity": "2023.1",
+  "documentationUrl": "https://github.com/AxelFougues/UnityOctreeSorted",
+  "changelogUrl": "https://github.com/AxelFougues/UnityOctreeSorted",
+  "licensesUrl": "https://github.com/AxelFougues/UnityOctreeSorted",
+ "keywords": [
+    "octree",
+    "spatial",
+    "closest"
+  ],
+  "author": {
+    "name": "Abyss Walker Dev",
+    "url": "https://github.com/AxelFougues/UnityOctreeSorted"
+  }
+}
