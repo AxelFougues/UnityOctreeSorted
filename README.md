@@ -3,8 +3,7 @@ Please note: This repository is no longer maintained.
 UnityOctree
 ===========
 
-A dynamic octree implementation for Unity written in C#.    
-Originally written for my game [Scraps](http://www.scrapsgame.com) but intended to be general-purpose.
+A dynamic octree implementation for Unity written in C# forked from https://github.com/Nition/UnityOctree and updated.
 
 There are two octree implementations here:    
 **BoundsOctree** stores any type of object, with the object boundaries defined as an axis-aligned bounding box. It's a dynamic octree and can also be a loose octree.   
@@ -19,19 +18,12 @@ There are two octree implementations here:
 **A few functions are implemented:**
 
 With BoundsOctree, you can pass in bounds and get a true/false answer for if it's colliding with anything (IsColliding), or get a list of everything it's collising with (GetColliding).
-With PointOctree, you can cast a ray and get a list of objects that are within x distance of that ray (GetNearby). You may also get a list of objects that are within x distance from a specified origin point.
 
-It shouldn't be too hard to implement additional functions if needed. For instance, PointOctree could check for points that fall inside a given bounds.
+With PointOctree, you can cast a ray and get a list of objects that are within x distance of that ray (GetNearby or GetNearbySorted). You may also get a list of objects that are within x distance from a specified origin point.
 
 **Considerations:**
 
-Tree searches are recursive, so there is technically the potential for a stack overflow on very large trees. The minNodeSize parameter limits node side and hence the depth of the tree, putting a cap on recursion.
-
-I tried switching to an iterative solution using my own stack, but creating and manipulating the stack made the results generally slower than the simple recursive solution. However, I wouldn't be surprised it someone smarter than me can come up with a faster solution.
-
-Another note: You may notice when viewing the bounds visualisation that the child nodes' outer edges are all inside the parent nodes. But loose octrees are meant to make the inner nodes bigger... aren't they? The answer is yes, but the parent nodes are *also* bigger, and e.g. ((1.2 * 10) - 10) is bigger than ((1.2 * 5) - 5), so the parent node ends up being bigger overall.
-
-This seems to be the standard way that loose octrees are done. I did an experiment: I tried making the child node dimensions looseness * the parent's actual size, instead of looseness * the parent's base size before looseness is applied. This seems more intuitively correct to me, but performance seems to be about the same.
+See: https://github.com/Nition/UnityOctree
 
 Example Usage
 ===========
@@ -86,6 +78,19 @@ pointTree.GetNearby(myPos, 4);
 ```
 - Where myPos is a [Vector3](http://docs.unity3d.com/Documentation/ScriptReference/Vector3.html)
 
+```C#
+pointTree.GetNearbySorted(myRay, 4);
+```
+- Where myRay is a [Ray](http://docs.unity3d.com/Documentation/ScriptReference/Ray.html)
+- In this case we're looking for any point within 4m of the closest point on the ray
+- Returns a `SortedList` where the keys are the distance (squared) and the values are the objects.
+
+```C#
+pointTree.GetNearby(myPos, 4);
+```
+- Where myPos is a [Vector3](http://docs.unity3d.com/Documentation/ScriptReference/Vector3.html)
+- Returns a `SortedList` where the keys are the distance (squared) and the values are the objects.
+
 **Debugging Visuals**
 
 ![Visualisation example.](https://raw.github.com/nition/UnityOctree/master/octree-visualisation.jpg)
@@ -106,5 +111,4 @@ void OnDrawGizmos() {
 
 **Potential Improvements**
 
-A significant portion of the octree's time is taken just to traverse through the nodes themselves. There's potential for a performance increase there, maybe by linearising the tree - that is, representing all the nodes as a one-dimensional array lookup.
-
+See: https://github.com/Nition/UnityOctree
