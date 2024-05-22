@@ -1,6 +1,4 @@
-Please note: This repository is no longer maintained.
-
-UnityOctree
+Unity Octree Sorted
 ===========
 
 A dynamic octree implementation for Unity written in C# forked from https://github.com/Nition/UnityOctree and updated.
