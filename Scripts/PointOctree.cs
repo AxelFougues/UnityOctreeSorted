@@ -156,12 +156,69 @@ public class PointOctree<T> {
 		return false;
 	}
 
-	/// <summary>
-	/// Return all objects in the tree.
-	/// If none, returns an empty array (not null).
+    /// <summary>
+	/// Returns objects that are within <paramref name="maxDistance"/> of the specified ray  sorted by distance (squared).
+	/// If none, returns false. Uses supplied sorted list for results.
 	/// </summary>
-	/// <returns>All objects.</returns>
-	public ICollection<T> GetAll() {
+	/// <param name="ray">The ray. Passing as ref to improve performance since it won't have to be copied.</param>
+	/// <param name="maxDistance">Maximum distance from the ray to consider</param>
+	/// <param name="nearBy">Pre-initialized list to populate</param>
+	/// <returns>True if items are found, false if not</returns>
+	public bool GetNearbySortedNonAlloc(Ray ray, float maxDistance, SortedList<float, T> nearBy) {
+        nearBy.Clear();
+        rootNode.GetNearbySorted(ref ray, maxDistance, nearBy);
+        if (nearBy.Count > 0)
+            return true;
+        return false;
+    }
+
+    /// <summary>
+    /// Returns objects that are within <paramref name="maxDistance"/> of the specified ray sorted by distance (squared).
+    /// If none, returns an empty array (not null).
+    /// </summary>
+    /// <param name="ray">The ray. Passing as ref to improve performance since it won't have to be copied.</param>
+    /// <param name="maxDistance">Maximum distance from the ray to consider.</param>
+    /// <returns>Objects within range sorted by distance (squared).</returns>
+    public SortedList<float, T> GetNearbySorted(Ray ray, float maxDistance) {
+        SortedList<float, T> collidingWith = new SortedList<float, T>();
+        rootNode.GetNearbySorted(ref ray, maxDistance, collidingWith);
+        return collidingWith;
+    }
+
+    /// <summary>
+    /// Returns objects that are within <paramref name="maxDistance"/> of the specified position sorted by distance (squared).
+    /// If none, returns an empty array (not null).
+    /// </summary>
+    /// <param name="position">The position. Passing as ref to improve performance since it won't have to be copied.</param>
+    /// <param name="maxDistance">Maximum distance from the position to consider.</param>
+    /// <returns>Objects within range sorted by distance (squared).</returns>
+    public SortedList<float, T> GetNearbySorted(Vector3 position, float maxDistance) {
+        SortedList<float, T> collidingWith = new SortedList<float, T>();
+        rootNode.GetNearbySorted(ref position, maxDistance, collidingWith);
+        return collidingWith;
+    }
+
+    /// <summary>
+    /// Returns objects that are within <paramref name="maxDistance"/> of the specified position sorted by distance (squared).
+    /// If none, returns false. Uses supplied sorted list for results.
+    /// </summary>
+    /// <param name="maxDistance">Maximum distance from the position to consider</param>
+    /// <param name="nearBy">Pre-initialized list to populate</param>
+    /// <returns>True if items are found, false if not</returns>
+    public bool GetNearbySortedNonAlloc(Vector3 position, float maxDistance, SortedList<float, T> nearBy) {
+        nearBy.Clear();
+        rootNode.GetNearbySorted(ref position, maxDistance, nearBy);
+        if (nearBy.Count > 0)
+            return true;
+        return false;
+    }
+
+    /// <summary>
+    /// Return all objects in the tree.
+    /// If none, returns an empty array (not null).
+    /// </summary>
+    /// <returns>All objects.</returns>
+    public ICollection<T> GetAll() {
 		List<T> objects = new List<T>(Count);
 		rootNode.GetAll(objects);
 		return objects;

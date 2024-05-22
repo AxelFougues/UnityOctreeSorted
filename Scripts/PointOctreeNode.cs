@@ -187,11 +187,88 @@ public class PointOctreeNode<T> {
 		}
 	}
 
-	/// <summary>
-	/// Return all objects in the tree.
+    /// <summary>
+	/// Return objects that are within maxDistance of the specified ray sorted by distance (squared).
 	/// </summary>
-	/// <returns>All objects.</returns>
-	public void GetAll(List<T> result) {
+	/// <param name="ray">The ray.</param>
+	/// <param name="maxDistance">Maximum distance from the ray to consider.</param>
+	/// <param name="result">List result.</param>
+	/// <returns>Objects within range sorted by distance.</returns>
+	public void GetNearbySorted(ref Ray ray, float maxDistance, SortedList<float, T> result) {
+        // Does the ray hit this node at all?
+        // Note: Expanding the bounds is not exactly the same as a real distance check, but it's fast.
+        // TODO: Does someone have a fast AND accurate formula to do this check?
+        bounds.Expand(new Vector3(maxDistance * 2, maxDistance * 2, maxDistance * 2));
+        bool intersected = bounds.IntersectRay(ray);
+        bounds.size = actualBoundsSize;
+        if (!intersected) {
+            return;
+        }
+
+        // Check against any objects in this node
+        for (int i = 0; i < objects.Count; i++) {
+            float distSqrt = SqrDistanceToRay(ray, objects[i].Pos);
+            if (distSqrt <= (maxDistance * maxDistance)) {
+                result.Add(distSqrt, objects[i].Obj);
+            }
+        }
+
+        // Check children
+        if (children != null) {
+            for (int i = 0; i < 8; i++) {
+                children[i].GetNearbySorted(ref ray, maxDistance, result);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Return objects that are within <paramref name="maxDistance"/> of the specified position sorted by distance (squared).
+    /// </summary>
+    /// <param name="position">The position.</param>
+    /// <param name="maxDistance">Maximum distance from the position to consider.</param>
+    /// <param name="result">List result.</param>
+    /// <returns>Objects within range sorted by distance.</returns>
+    public void GetNearbySorted(ref Vector3 position, float maxDistance, SortedList<float, T> result) {
+        float sqrMaxDistance = maxDistance * maxDistance;
+
+#if UNITY_2017_1_OR_NEWER
+        // Does the node intersect with the sphere of center = position and radius = maxDistance?
+        if ((bounds.ClosestPoint(position) - position).sqrMagnitude > sqrMaxDistance) {
+            return;
+        }
+#else
+		// Does the ray hit this node at all?
+		// Note: Expanding the bounds is not exactly the same as a real distance check, but it's fast
+		// TODO: Does someone have a fast AND accurate formula to do this check?
+		bounds.Expand(new Vector3(maxDistance * 2, maxDistance * 2, maxDistance * 2));
+		bool contained = bounds.Contains(position);
+		bounds.size = actualBoundsSize;
+		if (!contained) {
+			return;
+		}
+#endif
+
+        // Check against any objects in this node
+        for (int i = 0; i < objects.Count; i++) {
+            float distSqrt = (position - objects[i].Pos).sqrMagnitude;
+            if (distSqrt <= sqrMaxDistance) {
+                result.Add(distSqrt, objects[i].Obj);
+            }
+        }
+
+        // Check children
+        if (children != null) {
+            for (int i = 0; i < 8; i++) {
+                children[i].GetNearbySorted(ref position, maxDistance, result);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Return all objects in the tree.
+    /// </summary>
+    /// <returns>All objects.</returns>
+    public void GetAll(List<T> result) {
 		// add directly contained objects
 		result.AddRange(objects.Select(o => o.Obj));
 
